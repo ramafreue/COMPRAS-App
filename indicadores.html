@@ -51,7 +51,7 @@ header{
   padding:26px 32px 0;
 }
 .hd-top{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;max-width:1360px;margin:0 auto}
-.hd-left{display:flex;flex-direction:column;gap:8px;align-items:flex-start}
+.hd-right{display:flex;flex-direction:column;gap:4px;align-items:flex-end;text-align:right}
 .brand{display:flex;align-items:baseline;gap:14px}
 .brand h1{
   font-weight:900;letter-spacing:.02em;font-size:1.5rem;text-transform:uppercase;
@@ -63,7 +63,7 @@ header{
 }
 .hd-status{font-size:.85rem;color:rgba(246,243,232,.75);display:flex;gap:14px;align-items:center;flex-wrap:wrap}
 .hd-status b{color:var(--tag)}
-.hd-board{max-width:1360px;margin:18px auto 0;display:flex;gap:34px;flex-wrap:wrap;align-items:flex-end;padding-bottom:20px}
+.hd-board{max-width:1360px;margin:6px auto 0;display:flex;gap:34px;flex-wrap:wrap;align-items:flex-end;padding-bottom:20px}
 .board-kpi{min-width:170px}
 .board-kpi .lbl{font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:rgba(246,243,232,.65);margin-bottom:4px}
 .board-kpi .val{font-size:2.5rem;font-weight:900;line-height:1;letter-spacing:-.01em}
@@ -265,11 +265,11 @@ try {
 
 <header>
   <div class="hd-top">
-    <div class="hd-left"><div class="brand"><a class="home-fab" href="index.html" title="Volver al inicio">🏠</a>
+    <div class="brand"><a class="home-fab" href="index.html" title="Volver al inicio">🏠</a>
       <h1>Indicadores <span>de Compras</span></h1>
       <span class="yr" id="hdYear">Año</span>
-    </div><div id="fbStatus" style="margin-top:6px;padding:8px 16px;border-radius:8px;font-size:.8rem;font-weight:700;display:none"></div></div>
-<div class="hd-status" id="hdStatus">Sin datos cargados</div>
+    </div>
+<div class="hd-right"><div class="hd-status" id="hdStatus">Sin datos cargados</div><div id="fbStatus" style="margin-top:6px;padding:8px 16px;border-radius:8px;font-size:.8rem;font-weight:700;display:none"></div></div>
 </div>
   <div class="hd-board" id="hdBoard"></div>
 </header>
