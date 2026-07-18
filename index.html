@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Compras</title>
+<meta name="theme-color" content="#12352E">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<style>
+:root{
+  --board:#12352E; --board2:#0C2822; --paper:#EFF2EE; --ink:#15221D; --muted:#5F6E66;
+  --tag:#F2B33D; --chalk:#F6F3E8; --line:#DCE3DC;
+  --shadow:0 1px 2px rgba(21,34,29,.05),0 10px 30px rgba(21,34,29,.12);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:"Archivo",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  min-height:100vh;
+  background:
+    radial-gradient(1200px 500px at 15% -10%, rgba(242,179,61,.10), transparent 60%),
+    linear-gradient(170deg, var(--board) 0%, var(--board2) 100%);
+  color:var(--chalk);
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  padding:32px 20px;
+  -webkit-font-smoothing:antialiased;
+}
+.brand{text-align:center;margin-bottom:44px}
+.brand h1{font-size:2rem;font-weight:900;text-transform:uppercase;letter-spacing:.02em}
+.brand h1 span{color:var(--tag)}
+.brand p{color:rgba(246,243,232,.65);font-size:.9rem;margin-top:8px}
+.cards{display:grid;gap:20px;width:100%;max-width:760px;grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+.card{
+  background:var(--paper);color:var(--ink);border-radius:18px;box-shadow:var(--shadow);
+  padding:28px 26px;text-decoration:none;display:flex;flex-direction:column;gap:10px;
+  border:1.5px solid transparent;transition:transform .15s, border-color .15s;
+  cursor:pointer;
+}
+.card:hover{transform:translateY(-3px);border-color:var(--tag)}
+.card:active{transform:translateY(0)}
+.card .icon{font-size:2.2rem;line-height:1}
+.card h2{font-size:1.15rem;font-weight:900}
+.card p{font-size:.85rem;color:var(--muted);line-height:1.4}
+.card .go{margin-top:6px;font-size:.78rem;font-weight:800;color:var(--board);text-transform:uppercase;letter-spacing:.06em}
+footer{margin-top:40px;color:rgba(246,243,232,.45);font-size:.75rem;text-align:center}
+@media(max-width:480px){
+  .brand h1{font-size:1.5rem}
+  .card{padding:22px 20px}
+}
+</style>
+</head>
+<body>
+
+<div class="brand">
+  <h1>Compras <span>& Gestión</span></h1>
+  <p>Elegí qué querés ver</p>
+</div>
+
+<div class="cards">
+  <a class="card" href="indicadores.html">
+    <div class="icon">📊</div>
+    <h2>Indicadores de Compras</h2>
+    <p>Variación de precios, categorías, ítems y presupuesto vs. real.</p>
+    <div class="go">Abrir →</div>
+  </a>
+
+  <a class="card" href="ahorro.html">
+    <div class="icon">💰</div>
+    <h2>Proyectos de Ahorro</h2>
+    <p>Iniciativas de ahorro por comprador, niveles IL y seguimiento mensual.</p>
+    <div class="go">Abrir →</div>
+  </a>
+</div>
+
+<footer>TF Carnes · Área de Compras</footer>
+
+<script>
+if('serviceWorker' in navigator){
+  window.addEventListener('load', ()=>{
+    navigator.serviceWorker.register('sw.js').catch(e=>console.warn('SW error:',e));
+  });
+}
+</script>
+</body>
+</html>

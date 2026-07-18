@@ -1,0 +1,1046 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Proyectos de Ahorro — Compras</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+.home-fab{
+  position:fixed;top:14px;left:14px;z-index:200;
+  background:rgba(12,40,34,.85);color:#F6F3E8;border:1.5px solid rgba(246,243,232,.3);
+  border-radius:50%;width:42px;height:42px;display:flex;align-items:center;justify-content:center;
+  font-size:1.2rem;text-decoration:none;box-shadow:0 4px 14px rgba(0,0,0,.25);backdrop-filter:blur(4px);
+}
+.home-fab:hover{background:rgba(12,40,34,.95)}
+
+#view-load{display:none!important}
+#realGate{display:none!important}
+:root{
+  --board:#12352E; --board2:#0C2822;
+  --paper:#EFF2EE; --card:#FFF; --ink:#15221D; --muted:#5F6E66; --line:#DCE3DC;
+  --tag:#F2B33D;             /* estimado */
+  --good:#1E8E5A; --good-bg:#E6F4EC;   /* ahorro real = verde */
+  --bad:#C43D3D;  --bad-bg:#FBEAEA;
+  --neutral-bg:#F1F3F0; --chalk:#F6F3E8;
+  --il1:#8A97A0; --il2:#3E6B8F; --il3:#B0771B; --il4:#1E8E5A; --trunco:#C43D3D;
+  --radius:14px; --shadow:0 1px 2px rgba(21,34,29,.05),0 6px 20px rgba(21,34,29,.06);
+  font-size:15px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Archivo",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--paper);color:var(--ink);-webkit-font-smoothing:antialiased}
+.num{font-variant-numeric:tabular-nums}
+header{
+  background:radial-gradient(1200px 400px at 15% -10%, rgba(242,179,61,.10), transparent 60%),
+    linear-gradient(170deg, var(--board) 0%, var(--board2) 100%);
+  color:var(--chalk);padding:26px 32px 0;
+}
+.hd-top{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:12px;max-width:1360px;margin:0 auto}
+.brand{display:flex;align-items:baseline;gap:14px}
+.brand h1{font-weight:900;letter-spacing:.02em;font-size:1.5rem;text-transform:uppercase}
+.brand h1 span{color:var(--tag)}
+.hd-status{font-size:.85rem;color:rgba(246,243,232,.75);display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.hd-status b{color:var(--tag)}
+.hd-board{max-width:1360px;margin:18px auto 0;display:flex;gap:34px;flex-wrap:wrap;align-items:flex-end;padding-bottom:20px}
+.board-kpi{min-width:170px}
+.board-kpi .lbl{font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:rgba(246,243,232,.65);margin-bottom:4px}
+.board-kpi .val{font-size:2.4rem;font-weight:900;line-height:1}
+.board-kpi .val.small{font-size:1.8rem}
+.board-kpi .sub{font-size:.8rem;color:rgba(246,243,232,.6);margin-top:5px}
+.gold{color:var(--tag)} .green{color:#7BE0AE}
+nav{background:var(--board2);padding:0 32px;border-bottom:3px solid var(--tag)}
+.tabs{max-width:1360px;margin:0 auto;display:flex;gap:2px;overflow-x:auto}
+.tab{background:transparent;border:none;color:rgba(246,243,232,.7);font:inherit;font-weight:700;font-size:.9rem;padding:13px 20px;cursor:pointer;border-radius:10px 10px 0 0;white-space:nowrap}
+.tab:hover{color:var(--chalk);background:rgba(246,243,232,.06)}
+.tab.active{background:var(--paper);color:var(--ink)}
+.tab:focus-visible{outline:2px solid var(--tag);outline-offset:-2px}
+main{max-width:1360px;margin:0 auto;padding:26px 32px 70px}
+.view{display:none}.view.active{display:block}
+.grid{display:grid;gap:18px}
+.g2{grid-template-columns:repeat(auto-fit,minmax(420px,1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px 22px}
+.card h3{font-size:.78rem;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;gap:10px}
+.card h3 .hint{font-weight:400;letter-spacing:0;text-transform:none}
+.chart-wrap{position:relative;height:300px}.chart-wrap.tall{height:360px}
+.kpi{display:flex;flex-direction:column;gap:4px}
+.kpi .v{font-size:1.8rem;font-weight:900}
+.kpi .d{font-size:.82rem;color:var(--muted)}
+select,input[type=text],input[type=number],input[type=month]{font:inherit;padding:8px 12px;border:1.5px solid var(--line);border-radius:9px;background:#fff;color:var(--ink)}
+select:focus,input:focus,textarea:focus{outline:2px solid var(--tag);outline-offset:1px;border-color:var(--tag)}
+button.btn{font:inherit;font-weight:700;padding:9px 18px;border-radius:10px;cursor:pointer;border:1.5px solid var(--board);background:var(--board);color:var(--chalk)}
+button.btn:hover{background:var(--board2)}
+button.btn.ghost{background:#fff;color:var(--board)}
+button.btn.ghost:hover{background:var(--neutral-bg)}
+button.btn.warn{background:#fff;color:var(--bad);border-color:var(--bad)}
+button.btn.sm{padding:5px 12px;font-size:.8rem;border-radius:8px}
+button.btn:focus-visible{outline:2px solid var(--tag);outline-offset:2px}
+.row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.row.between{justify-content:space-between}
+.spacer{flex:1}
+label.lb{font-size:.78rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+table{border-collapse:collapse;width:100%;font-size:.86rem}
+th{text-align:right;font-size:.7rem;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);padding:8px 10px;border-bottom:2px solid var(--line);white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+td{padding:7px 10px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+tr:hover td{background:var(--neutral-bg)}
+td.link{font-weight:700;cursor:pointer;color:var(--board)}
+td.link:hover{text-decoration:underline}
+td.wrap{white-space:normal;text-align:left;max-width:340px}
+.tbl-scroll{overflow-x:auto}
+.badge{display:inline-block;border-radius:99px;padding:3px 11px;font-size:.72rem;font-weight:800;letter-spacing:.04em;color:#fff}
+.b-il1{background:var(--il1)}.b-il2{background:var(--il2)}.b-il3{background:var(--il3)}.b-il4{background:var(--il4)}
+.b-trunco{background:var(--trunco)}
+.b-fin{background:#495B53}.b-prog{background:#7A6AA0}
+.cell-var{border-radius:6px;padding:3px 8px;display:inline-block;min-width:60px;font-weight:600}
+.vg{background:var(--good-bg);color:var(--good)}.vb{background:var(--bad-bg);color:var(--bad)}.vn{background:var(--neutral-bg);color:var(--muted)}
+/* form */
+.fgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}
+.f{display:flex;flex-direction:column;gap:5px}
+.f label{font-size:.72rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+.f input,.f select,.f textarea{width:100%}
+.f textarea{font:inherit;border:1.5px solid var(--line);border-radius:9px;padding:8px 12px;min-height:64px;resize:vertical}
+.f .calc{background:var(--chalk);border:1.5px dashed var(--line);border-radius:9px;padding:8px 12px;font-weight:800}
+.il-steps{display:flex;gap:0;margin:6px 0 2px;flex-wrap:wrap}
+.il-step{flex:1;min-width:150px;border:1.5px solid var(--line);padding:10px 12px;background:#fff;position:relative}
+.il-step:first-child{border-radius:10px 0 0 10px}.il-step:last-child{border-radius:0 10px 10px 0}
+.il-step.on{background:var(--chalk);border-color:var(--tag)}
+.il-step.cur{outline:2.5px solid var(--tag)}
+.il-step .t{font-size:.72rem;font-weight:900;letter-spacing:.06em}
+.il-step .s{font-size:.68rem;color:var(--muted)}
+.il-step input{margin-top:6px;width:100%;padding:5px 8px;font-size:.85rem}
+.pill{display:inline-block;background:var(--neutral-bg);border-radius:99px;padding:2px 10px;font-size:.72rem;font-weight:700;color:var(--muted)}
+.upl{border:2px dashed var(--line);border-radius:var(--radius);padding:18px;background:#fff}
+.upl.drag{border-color:var(--tag);background:#FFFBEF}
+.upl h4{font-size:.95rem;margin-bottom:4px}
+.upl p{font-size:.8rem;color:var(--muted);margin-bottom:12px}
+.upl .st{font-size:.8rem;font-weight:700;margin-top:10px}
+.upl .st.ok{color:var(--good)}
+.fx-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:8px}
+.fx-grid .fxc{display:flex;flex-direction:column;gap:3px}
+.fx-grid .fxc span{font-size:.68rem;font-weight:700;color:var(--muted);text-transform:uppercase}
+.fx-grid input{width:100%;padding:6px 8px;font-size:.85rem}
+.note{font-size:.8rem;color:var(--muted);line-height:1.5}
+.empty{text-align:center;padding:60px 20px;color:var(--muted)}
+.empty .big{font-size:1.15rem;font-weight:800;color:var(--ink);margin-bottom:8px}
+#fbStatus.mode-admin{background:rgba(30,142,90,.15);color:#1E8E5A}
+#fbStatus.mode-read{background:rgba(242,179,61,.20);color:#8a6a1a}
+.linklike{background:none;border:none;font-weight:700;cursor:pointer;padding:0;text-decoration:underline;color:inherit;font-size:inherit}
+.admin-gate{position:relative}
+.admin-gate.locked>*:not(.gate-banner){pointer-events:none;opacity:.45;filter:grayscale(.25)}
+.gate-banner{display:none;background:var(--bad-bg);color:var(--bad);border:1.5px solid var(--bad);border-radius:10px;padding:12px 16px;font-weight:700;margin-bottom:14px}
+.admin-gate.locked .gate-banner{display:block}
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--board);color:var(--chalk);padding:12px 22px;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,.25);font-weight:700;font-size:.9rem;transition:transform .25s;z-index:99;max-width:90vw}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{background:#fff;border:1.5px solid var(--line);border-radius:99px;padding:4px 13px;font-size:.8rem;font-weight:700;cursor:pointer}
+.chip.on{background:var(--board);color:var(--chalk);border-color:var(--board)}
+.projcard-num{
+  display:inline-flex;align-items:center;justify-content:center;min-width:46px;height:46px;
+  background:var(--tag);border-radius:10px;font-weight:900;font-size:1.15rem;color:#3A2A05;
+}
+dialog{border:none;border-radius:var(--radius);box-shadow:0 20px 60px rgba(0,0,0,.3);padding:24px;max-width:600px;width:92vw}
+dialog::backdrop{background:rgba(12,40,34,.55)}
+dialog h3{margin-bottom:12px;font-size:1.05rem}
+textarea.paste{width:100%;font:13px ui-monospace,monospace;border:1.5px solid var(--line);border-radius:9px;padding:10px;min-height:130px}
+@media(max-width:760px){header,nav,main{padding-left:16px;padding-right:16px}.board-kpi .val{font-size:1.8rem}.g2{grid-template-columns:1fr}}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+</style>
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/7.24.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/7.24.0/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/7.24.0/firebase-firestore.js"></script>
+<!-- Firebase Config — REEMPLAZA CON TUS VALORES (ver instrucciones) -->
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyCSkwCgOxh-KqUtBpimOc1AIMFj-PoT9wI",
+  authDomain: "compras-a3b87.firebaseapp.com",
+  projectId: "compras-a3b87",
+  storageBucket: "compras-a3b87.firebasestorage.app",
+  messagingSenderId: "448898416028",
+  appId: "1:448898416028:web:e48b95944249f724849c59"
+};
+try {
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+  const auth = firebase.auth();
+  window.firebaseReady = true;
+} catch(e) {
+  console.warn('Firebase config no cargada. Reemplaza los valores en el HTML. Error:', e.message);
+  window.firebaseReady = false;
+}
+</script>
+
+<meta name="theme-color" content="#12352E">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+</head>
+<body>
+<a class="home-fab" href="index.html" title="Volver al inicio">🏠</a>
+
+
+<header>
+  <div class="hd-top">
+    <div class="brand"><h1>Proyectos <span>de Ahorro</span></h1></div>
+    <div class="hd-status" id="hdStatus"></div>
+  <div id="fbStatus" style="margin-top:6px;padding:8px 16px;border-radius:8px;font-size:.8rem;font-weight:700;display:none"></div>
+  </div>
+  <div class="hd-board" id="hdBoard"></div>
+</header>
+
+<nav>
+  <div class="tabs" role="tablist">
+    <button class="tab active" data-view="panel" role="tab">Panel</button>
+    <button class="tab" data-view="projects" role="tab">Proyectos</button>
+    <button class="tab" data-view="analysis" role="tab">Análisis</button>
+      </div>
+</nav>
+
+<main>
+
+<!-- ============ PANEL ============ -->
+<section class="view active" id="view-panel">
+  <div class="row between" style="margin-bottom:18px">
+    <div class="row">
+      <label class="lb" for="selYear">Año de gestión</label>
+      <select id="selYear"></select>
+    </div>
+    <span class="note">Estimado = monto del nivel vigente ÷ duración, desde la fecha de implementación · Real = ahorro efectivamente medido, dolarizado al TC BNA vendedor</span>
+  </div>
+
+  <div class="grid g3" style="margin-bottom:18px">
+    <div class="card kpi"><h3>Ahorro real del año</h3><div class="v num" style="color:var(--good)" id="kReal">–</div><div class="d" id="kRealD">USD efectivamente ahorrados</div></div>
+    <div class="card kpi"><h3>Ahorro estimado del año</h3><div class="v num" style="color:#B0771B" id="kEst">–</div><div class="d">Según plan de proyectos</div></div>
+    <div class="card kpi"><h3>Cumplimiento</h3><div class="v num" id="kCumpl">–</div><div class="d">Real ÷ estimado (meses transcurridos)</div></div>
+    <div class="card kpi"><h3>Pipeline en gestión</h3><div class="v num" id="kPipe">–</div><div class="d" id="kPipeD">Ahorro anual potencial IL1–IL3</div></div>
+    <div class="card kpi"><h3>Proyectos</h3><div class="v num" id="kProj">–</div><div class="d" id="kProjD">–</div></div>
+    <div class="card kpi"><h3>Tasa de éxito</h3><div class="v num" id="kExito">–</div><div class="d">Implementados ÷ (implementados + truncos)</div></div>
+  </div>
+
+  <div class="grid g2">
+    <div class="card"><h3>Ahorro mensual: estimado vs. real <span class="hint" id="hEstReal"></span></h3><div class="chart-wrap"><canvas id="chMes"></canvas></div></div>
+    <div class="card"><h3>Ahorro acumulado del año</h3><div class="chart-wrap"><canvas id="chAcum"></canvas></div></div>
+    <div class="card"><h3>Ahorro por categoría <span class="hint">del año seleccionado</span></h3><div class="chart-wrap tall"><canvas id="chCat"></canvas></div></div>
+    <div class="card"><h3>Cartera por nivel de implementación <span class="hint">ahorro anual vigente</span></h3><div class="chart-wrap tall"><canvas id="chIL"></canvas></div></div>
+  </div>
+</section>
+
+<!-- ============ PROYECTOS ============ -->
+<section class="view" id="view-projects">
+  <div class="card" style="margin-bottom:18px">
+    <div class="row">
+      <input type="text" id="projSearch" placeholder="Buscar por N°, descripción, categoría o subcategoría…" style="flex:1;min-width:260px">
+      <div class="chips" id="projFilters">
+        <span class="chip on" data-f="all">Todos</span>
+        <span class="chip" data-f="pipe">En gestión (IL1–IL3)</span>
+        <span class="chip" data-f="activo">Generando ahorro</span>
+        <span class="chip" data-f="fin">Finalizados</span>
+        <span class="chip" data-f="trunco">Truncos</span>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="tbl-scroll"><table id="tblProj"></table></div>
+  </div>
+  <div id="projDetail" style="display:none;margin-top:18px">
+    <div class="card" style="margin-bottom:18px">
+      <div class="row" style="gap:16px">
+        <span class="projcard-num" id="pdNum">–</span>
+        <div style="flex:1;min-width:260px">
+          <div style="font-weight:900;font-size:1.15rem" id="pdDesc">–</div>
+          <div class="note" id="pdMeta">–</div>
+        </div>
+        <div id="pdBadge"></div>
+        <button class="btn ghost sm" onclick="editProject(_selProj)">Editar en Carga</button>
+      </div>
+      <div class="il-steps" id="pdSteps" style="margin-top:16px"></div>
+      <p class="note" id="pdObs" style="margin-top:10px"></p>
+    </div>
+    <div class="grid g2">
+      <div class="card"><h3>Estimado vs. real mensual</h3><div class="chart-wrap tall"><canvas id="chProj"></canvas></div></div>
+      <div class="card admin-gate" id="realGate">
+        <div class="gate-banner" style="margin-bottom:10px">🔒 Solo el administrador puede registrar ahorro real.</div>
+        <h3>Registrar ahorro real del mes <span class="hint">cantidad × Δprecio ÷ TC BNA</span></h3>
+        <div class="fgrid">
+          <div class="f"><label>Mes</label><input type="month" id="rMes"></div>
+          <div class="f"><label>Cantidad consumida</label><input type="number" id="rQty" step="any" placeholder="unid./kg"></div>
+          <div class="f"><label>Precio que se venía pagando $</label><input type="number" id="rPAnt" step="any"></div>
+          <div class="f"><label>Precio nuevo $</label><input type="number" id="rPNue" step="any"></div>
+          <div class="f"><label>TC BNA vendedor</label><input type="number" id="rTC" step="any" placeholder="auto si está cargado"></div>
+          <div class="f"><label>Ahorro del mes USD</label><div class="calc num" id="rCalc">–</div></div>
+        </div>
+        <div class="row" style="margin-top:12px">
+          <button class="btn" onclick="saveReal()">Guardar ahorro del mes</button>
+          <span class="note">También podés tipear el USD directo en Cantidad=ahorro, Δprecio=1, TC=1.</span>
+        </div>
+        <div class="tbl-scroll" style="margin-top:16px"><table id="tblProjMes"></table></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ANALISIS ============ -->
+<section class="view" id="view-analysis">
+  <div class="card" style="margin-bottom:18px">
+    <div class="row">
+      <label class="lb">Agrupar por</label>
+      <select id="anDim"><option value="cat">Categoría</option><option value="sub">Subcategoría</option><option value="il">Nivel IL</option></select>
+      <label class="lb">Métrica</label>
+      <select id="anMet"><option value="real">Ahorro real</option><option value="est">Ahorro estimado</option></select>
+      <label class="lb">Año</label>
+      <select id="anYear"></select>
+    </div>
+  </div>
+  <div class="grid g2">
+    <div class="card"><h3 id="anChartT">Ahorro por trimestre</h3><div class="chart-wrap tall"><canvas id="chAn"></canvas></div></div>
+    <div class="card"><h3>Tabla trimestral <span class="hint">USD</span></h3><div class="tbl-scroll"><table id="tblAn"></table></div></div>
+    <div class="card"><h3>Comparativa entre años <span class="hint">total anual USD</span></h3><div class="chart-wrap"><canvas id="chYears"></canvas></div></div>
+    <div class="card"><h3>Estimado vs. real por grupo <span class="hint" id="anMixHint"></span></h3><div class="chart-wrap"><canvas id="chMix"></canvas></div></div>
+  </div>
+</section>
+
+<!-- ============ CARGA ============ -->
+<section class="view" id="view-load">
+  <div class="admin-gate" id="loadGate">
+    <div class="gate-banner">🔒 Modo solo lectura — iniciá sesión como administrador (arriba a la derecha) para cargar o modificar datos.</div>
+  <div class="grid g2" style="margin-bottom:18px">
+    <div class="card" style="grid-column:1/-1">
+      <div class="row between">
+        <h3 style="margin:0" id="formTitle">Nueva iniciativa de ahorro</h3>
+        <div class="row">
+          <label class="lb">Editar existente</label>
+          <select id="selEdit"><option value="">— nuevo proyecto —</option></select>
+        </div>
+      </div>
+      <div class="fgrid" style="margin-top:16px">
+        <div class="f"><label>Proyecto N°</label><div class="calc num" id="fNum">–</div></div>
+        <div class="f"><label>Categoría</label><select id="fCat"></select></div>
+        <div class="f"><label>Subcategoría (a mano)</label><input type="text" id="fSub" placeholder="ej: Barbijos"></div>
+        <div class="f"><label>Consumo anual de la categoría USD</label><input type="number" id="fConsumo" step="any"></div>
+        <div class="f"><label>Ahorro estimado anual USD</label><input type="number" id="fAhorro" step="any" placeholder="a mano"></div>
+        <div class="f"><label>% Ahorro (calculado)</label><div class="calc num" id="fPct">–</div></div>
+        <div class="f"><label>Fecha de implementación</label><input type="month" id="fFecha"></div>
+        <div class="f"><label>Duración del proyecto (meses)</label><select id="fDur"></select></div>
+      </div>
+      <div class="fgrid" style="margin-top:14px">
+        <div class="f" style="grid-column:1/-1"><label>Descripción de la iniciativa</label><textarea id="fDesc" placeholder="Qué se va a hacer para generar el ahorro"></textarea></div>
+        <div class="f" style="grid-column:1/-1"><label>Observaciones</label><textarea id="fObs" placeholder="Información adicional de la iniciativa"></textarea></div>
+      </div>
+      <div style="margin-top:16px">
+        <label class="lb">Nivel de implementación — el monto se ajusta al avanzar de etapa</label>
+        <div class="il-steps" id="fSteps"></div>
+        <p class="note" style="margin-top:6px">IL1 Proposed: propuesta aproximada, sin contacto con proveedor · IL2 Reviewed: primeros contactos, pruebas y muestras · IL3 Validated: pruebas finalizadas, monto ajustado · IL4 Implemented: el ahorro empieza a caer desde la fecha de implementación.</p>
+      </div>
+      <div class="row" style="margin-top:16px">
+        <button class="btn" id="btnSave" onclick="saveProject()">Guardar proyecto</button>
+        <button class="btn ghost" onclick="clearForm()">Limpiar formulario</button>
+        <span class="spacer"></span>
+        <label class="row" style="gap:8px;font-size:.85rem;font-weight:700;color:var(--bad)">
+          <input type="checkbox" id="fTrunco" style="width:18px;height:18px"> Proyecto trunco (no prosperó — se conserva como gestión)
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid g2">
+    <div class="upl" id="uCats">
+      <h4>Categorías de la empresa <span class="pill">CSV / Excel / pegar</span></h4>
+      <p>Columnas: <b>CATEGORIA</b> y opcional <b>CONSUMO ANUAL USD</b>. Al elegir la categoría en el formulario se autocompleta su consumo.</p>
+      <div class="row">
+        <button class="btn" onclick="pickFile('cats')">Subir archivo</button>
+        <button class="btn ghost" onclick="openPaste('cats')">Pegar desde Excel</button>
+      </div>
+      <div class="st ok" id="stCats"></div>
+      <div class="tbl-scroll" style="margin-top:12px;max-height:260px;overflow-y:auto"><table id="tblCatsList"></table></div>
+    </div>
+    <div class="card">
+      <h3>TC BNA vendedor <span class="hint">para dolarizar el ahorro real</span></h3>
+      <div class="row" style="margin-bottom:10px"><label class="lb">Año</label><select id="fxYear"></select></div>
+      <div class="fx-grid" id="fxGrid"></div>
+    </div>
+    <div class="card">
+      <h3>Respaldo</h3>
+      <div class="row">
+        <button class="btn ghost" onclick="exportJSON()">Exportar respaldo (JSON)</button>
+        <button class="btn ghost" onclick="document.getElementById('fJson').click()">Importar respaldo</button>
+        <input type="file" id="fJson" accept=".json" hidden>
+        <button class="btn warn" onclick="resetAll()">Restaurar ejemplos</button>
+      </div>
+      <p class="note" style="margin-top:10px">Los datos quedan guardados en este navegador. Exportá un respaldo JSON periódicamente.</p>
+    </div>
+  </div>
+  </div>
+
+  <div class="card" style="margin-top:18px"><h3>Estado</h3><div class="note" id="dataStatus"></div></div>
+  <input type="file" id="fPick" accept=".xlsx,.xls,.csv" hidden>
+</section>
+
+</main>
+
+<dialog id="dlgPaste">
+  <h3>Pegar categorías desde Excel</h3>
+  <p class="note" style="margin-bottom:10px">Una categoría por fila. Segunda columna opcional: consumo anual USD.</p>
+  <textarea class="paste" id="pasteArea" placeholder="Grasas y Aceites	1105800&#10;Envases y Envolturas	1241428"></textarea>
+  <div class="row" style="margin-top:12px;justify-content:flex-end">
+    <button class="btn ghost" onclick="dlgPaste.close()">Cancelar</button>
+    <button class="btn" onclick="confirmPaste()">Procesar</button>
+  </div>
+</dialog>
+
+<dialog id="dlgLogin">
+  <h3>Iniciar sesión como administrador</h3>
+  <p class="note" style="margin-bottom:10px">Solo el administrador puede cargar o modificar datos. El resto de las personas ven todo en modo lectura.</p>
+  <div class="f" style="margin-bottom:10px"><label>Email</label><input type="text" id="loginEmail" autocomplete="username"></div>
+  <div class="f"><label>Contraseña</label><input type="password" id="loginPass" autocomplete="current-password"></div>
+  <div class="row" style="margin-top:14px;justify-content:flex-end">
+    <button class="btn ghost" onclick="dlgLogin.close()">Cancelar</button>
+    <button class="btn" onclick="confirmLogin()">Ingresar</button>
+  </div>
+</dialog>
+
+<div class="toast" id="toast"></div>
+<script id="seedData" type="application/json">{"cats":{"Descartables y Limpieza":48533.0,"Grasas y Aceites":1105800.0,"Envases y Envolturas":1241428.0,"Grumos":1180600.0,"Frutos Secos y Semillas":1300000.0,"Edulcorantes":2428957.0,"Moldes Plástico":250000.0,"Caja Madalenas":487000.0,"Levadura":1678000.0,"Materiales Importados":7253886.0,"BOPP":658427.0,"Quimicos":352078.0},"projects":[{"id":1,"cat":"Descartables y Limpieza","sub":"Barbijos","consumo":48533.33,"desc":"Cambio Barbijo Induset (Lustramax) por PMX y JYF (50%-50%)","obs":"Desde Marzo se realiza compra. Se incluye nuevo proveedor en Junio","monto":{"il1":null,"il2":null,"il3":null,"il4":22400.0},"il":4,"fecha":"2021-03","dur":12,"trunco":false,"real":{"2021-03":{"usd":2060.67},"2021-04":{"usd":1230.46},"2021-05":{"usd":2430.08},"2021-06":{"usd":2820.84},"2021-07":{"usd":3545.95}}},{"id":2,"cat":"Grasas y Aceites","sub":"Directo","consumo":1105800.0,"desc":"Cambio Aceite Girasol a Soja (Valente)","obs":"","monto":{"il1":99180.0,"il2":null,"il3":null,"il4":null},"il":1,"fecha":"2021-07","dur":12,"trunco":false,"real":{}},{"id":3,"cat":"Envases y Envolturas","sub":"Directo","consumo":1241428.0,"desc":"Pasar a 17 micrones","obs":"Se tomará en cuenta Budines, Madalenas y Vainillas (Empaques Secuendarios)","monto":{"il1":null,"il2":null,"il3":99314.24,"il4":null},"il":3,"fecha":"2021-07","dur":9,"trunco":false,"real":{}},{"id":4,"cat":"Grumos","sub":"Directo","consumo":1180600.0,"desc":"Fijacion de Tipo de Cambio por 6 meses","obs":"","monto":{"il1":null,"il2":null,"il3":null,"il4":21428.57},"il":4,"fecha":"2021-01","dur":6,"trunco":false,"real":{"2021-01":{"usd":3500.0},"2021-02":{"usd":8928.43},"2021-03":{"usd":11322.67},"2021-04":{"usd":8260.1},"2021-05":{"usd":4344.57},"2021-06":{"usd":17638.19}}},{"id":5,"cat":"Frutos Secos y Semillas","sub":"Directo","consumo":1300000.0,"desc":"Compra de Sesamo de la India","obs":"","monto":{"il1":58500.0,"il2":null,"il3":null,"il4":null},"il":1,"fecha":"2022-01","dur":12,"trunco":false,"real":{}},{"id":6,"cat":"Frutos Secos y Semillas","sub":"Directo","consumo":229707.0,"desc":"Fason Premezcla en Cores","obs":"probable sep 16","monto":{"il1":null,"il2":null,"il3":63730.0,"il4":null},"il":3,"fecha":"2021-07","dur":9,"trunco":false,"real":{}},{"id":7,"cat":"Edulcorantes","sub":"Directo","consumo":2428957.0,"desc":"Otras fuentes de suminitro","obs":"","monto":{"il1":21860.61,"il2":null,"il3":null,"il4":null},"il":1,"fecha":"2021-08","dur":12,"trunco":false,"real":{}},{"id":8,"cat":"Moldes Plástico","sub":"Directo","consumo":250000.0,"desc":"Reduccion de micronaje en bandeja de budines de 300 a 250 micrones","obs":"por falta de funcionamiento del horno falta prueba","monto":{"il1":7680.0,"il2":null,"il3":null,"il4":null},"il":1,"fecha":"2021-07","dur":10,"trunco":false,"real":{}},{"id":9,"cat":"Caja Madalenas","sub":"Directo","consumo":487000.0,"desc":"Cambiar papel blanco por Kraft con misma cantidad de colores","obs":"no aceptado por parte de planta","monto":{"il1":8773.5,"il2":null,"il3":null,"il4":null},"il":1,"fecha":"2021-07","dur":8,"trunco":true,"real":{}},{"id":10,"cat":"Levadura","sub":"Directo","consumo":1678000.0,"desc":"Cambio de Levadura de Calsa a Lessafre (Pacheco y Tesei)","obs":"Consumo Pacheco 700 Ton y Tesei 500 Ton","monto":{"il1":null,"il2":null,"il3":null,"il4":31722.94},"il":4,"fecha":"2021-04","dur":10,"trunco":false,"real":{"2021-04":{"usd":1177.93},"2021-05":{"usd":6443.66},"2021-06":{"usd":8273.83}}},{"id":11,"cat":"Materiales Importados","sub":"Directo","consumo":7253886.01,"desc":"Se analizaran los productos con mayor posibilidad de importacion dado el cambio de la situacion del pais","obs":"Los 3 insumos mas representativos (ej Fibras)","monto":{"il1":21761.66,"il2":null,"il3":null,"il4":null},"il":1,"fecha":"2021-08","dur":12,"trunco":false,"real":{}},{"id":12,"cat":"BOPP","sub":"Directos","consumo":658427.14,"desc":"Reducción de Precio de las Estructuras de BOPP al proveedor IPC","obs":"","monto":{"il1":null,"il2":null,"il3":null,"il4":93469.98},"il":4,"fecha":"2021-01","dur":3,"trunco":false,"real":{"2021-01":{"usd":3600.0},"2021-02":{"usd":1030.63},"2021-03":{"usd":176.0}}},{"id":13,"cat":"BOPP","sub":"Directos","consumo":244665.27,"desc":"Reducción de Precio de las Estructuras de BOPP por Cambio al Proveedor Petropack","obs":"","monto":{"il1":null,"il2":null,"il3":null,"il4":80931.34},"il":4,"fecha":"2021-01","dur":3,"trunco":false,"real":{"2021-01":{"usd":2000.0},"2021-02":{"usd":8516.35},"2021-03":{"usd":19293.0}}},{"id":14,"cat":"Quimicos","sub":"Directos","consumo":352078.43,"desc":"Cambio Sorbitol de Cargill a Quimica Mega","obs":"","monto":{"il1":null,"il2":null,"il3":null,"il4":28166.27},"il":4,"fecha":"2021-04","dur":12,"trunco":false,"real":{"2021-04":{"usd":1511.42},"2021-05":{"usd":1615.64},"2021-06":{"usd":719.2}}},{"id":15,"cat":"Quimicos","sub":"Directos","consumo":4156140.0,"desc":"Negociacion quimicos Asocia 2015-2016","obs":"","monto":{"il1":null,"il2":null,"il3":null,"il4":206000.0},"il":4,"fecha":"2021-01","dur":7,"trunco":false,"real":{"2021-01":{"usd":17166.67},"2021-02":{"usd":17166.67},"2021-03":{"usd":17166.67},"2021-04":{"usd":13336.28},"2021-05":{"usd":17391.08},"2021-06":{"usd":9274.57}}}],"fx":{"2021-01":92.6,"2021-02":94.5,"2021-03":97.1,"2021-04":98.6,"2021-05":99.9,"2021-06":101.3,"2021-07":102.7,"2021-08":104.0,"2021-09":104.5,"2021-10":105.4,"2021-11":106.2,"2021-12":108.0,"2022-01":110.5,"2022-02":113.0,"2022-03":116.5,"2022-04":120.0,"2022-05":123.5,"2022-06":128.5,"2022-07":135.0,"2022-08":143.0,"2022-09":152.0,"2022-10":163.0,"2022-11":171.5,"2022-12":183.0},"nextId":16}</script>
+<script>
+/* ============================================================
+   PROYECTOS DE AHORRO — lógica del Excel:
+   · Estimado mensual = monto del IL vigente ÷ duración,
+     desplegado desde la fecha de implementación (1 a 12 meses).
+   · Real mensual = cantidad × (precio anterior − precio nuevo) ÷ TC BNA.
+   · IL1 Proposed → IL2 Reviewed → IL3 Validated → IL4 Implemented:
+     el monto se ajusta en cada etapa; el vigente es el del nivel
+     más alto alcanzado.
+   · Los truncos se conservan (gestión del área) pero no proyectan
+     estimado ni real.
+============================================================ */
+const MES_AB=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+const MESES=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+const IL_INFO={1:['IL1 · Proposed','Propuesta aproximada, sin contacto con proveedor'],
+               2:['IL2 · Reviewed','Primeros contactos, pruebas y muestras'],
+               3:['IL3 · Validated','Pruebas finalizadas, monto ajustado'],
+               4:['IL4 · Implemented','Implementado: el ahorro empieza a caer']};
+
+let state={cats:{},projects:[],fx:{},nextId:1};
+
+let db=null, auth=null;
+const KEY='proyectos_ahorro';
+async function saveState(){
+  if(!window.firebaseReady || !auth.currentUser) { try{localStorage.setItem(KEY,JSON.stringify(state));}catch(e){} return; }
+  try{ await db.collection('proyectos_ahorro').doc('data').set(state); }
+  catch(e){ console.error('Error guardando en Firebase:',e); }
+}
+async function loadState(){
+  if(!window.firebaseReady || !auth.currentUser) {
+    try{ const s=localStorage.getItem(KEY); if(s){ state=JSON.parse(s); return true; } }catch(e){} 
+    return false;
+  }
+  try{ const doc=await db.collection('proyectos_ahorro').doc('data').get();
+    if(doc.exists){ state={...state,...doc.data()}; return true; }
+  }catch(e){console.error('Error leyendo Firebase:',e);}
+  return false;
+}
+function loadSeed(){const el=document.getElementById('seedData');if(!el)return false;
+  try{state=JSON.parse(el.textContent);saveState();return true;}catch(e){return false;}}
+function setupFirebaseListener(){
+  if(!window.firebaseReady || !auth.currentUser) return;
+  db.collection('proyectos_ahorro').doc('data').onSnapshot(doc=>{
+    if(doc.exists){ state={...state,...doc.data()}; initAll(); }
+  }, err=>console.error('Listener error:',err));
+}
+
+const $=id=>document.getElementById(id);
+function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('show'),3200);}
+function norm(s){return String(s??'').toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();}
+function numAR(v){if(v==null||v==='')return null;if(typeof v==='number')return isFinite(v)?v:null;
+  let s=String(v).trim().replace(/\$|\s|USD/gi,'');
+  if(/,\d{1,4}$/.test(s))s=s.replace(/\./g,'').replace(',','.');else s=s.replace(/,/g,'');
+  const n=parseFloat(s);return isFinite(n)?n:null;}
+const fU=(v,d=0)=>v==null?'–':'USD '+v.toLocaleString('es-AR',{maximumFractionDigits:d});
+const fUk=v=>v==null?'–':v>=1e6?'USD '+(v/1e6).toLocaleString('es-AR',{maximumFractionDigits:2})+' M':'USD '+(v/1e3).toLocaleString('es-AR',{maximumFractionDigits:1})+' k';
+const fPct=(v,d=1)=>v==null||!isFinite(v)?'–':(v*100).toFixed(d).replace('.',',')+'%';
+const fN=(v,d=2)=>v==null?'–':v.toLocaleString('es-AR',{maximumFractionDigits:d});
+function ymKey(y,m){return `${y}-${String(m+1).padStart(2,'0')}`;}
+function parseYM(k){const[a,b]=k.split('-');return[parseInt(a,10),parseInt(b,10)-1];}
+function addM(y,m,n){const t=y*12+m+n;return[Math.floor(t/12),t%12];}
+
+/* ---------- derivados por proyecto ---------- */
+function vigente(p){for(let k=4;k>=1;k--){const v=p.monto['il'+k];if(v!=null&&v>0)return v;}return null;}
+function schedule(p){ // { 'YYYY-MM': estimado }
+  const out={};if(p.trunco)return out;
+  const v=vigente(p);if(v==null||!p.fecha)return out;
+  const[y0,m0]=parseYM(p.fecha);const dur=Math.min(Math.max(p.dur||12,1),12);
+  const mensual=v/dur;
+  for(let i=0;i<dur;i++){const[y,m]=addM(y0,m0,i);out[ymKey(y,m)]=mensual;}
+  return out;
+}
+function realOf(p){const out={};if(p.trunco)return out;
+  for(const k in (p.real||{})){const v=p.real[k];if(v&&v.usd)out[k]=v.usd;}return out;}
+function estado(p){
+  if(p.trunco)return['trunco','Trunco','b-trunco'];
+  if(p.il<4)return['pipe',IL_INFO[p.il][0].split(' · ')[1],'b-il'+p.il];
+  const now=new Date();const nowK=now.getFullYear()*12+now.getMonth();
+  const[y0,m0]=parseYM(p.fecha);const start=y0*12+m0,end=start+(p.dur||12)-1;
+  if(nowK<start)return['prog','Programado','b-prog'];
+  if(nowK>end)return['fin','Finalizado · proceso','b-fin'];
+  return['activo','Generando ahorro','b-il4'];
+}
+function yearsInPlay(){
+  const ys=new Set([new Date().getFullYear()]);
+  state.projects.forEach(p=>{
+    Object.keys(schedule(p)).forEach(k=>ys.add(parseYM(k)[0]));
+    Object.keys(p.real||{}).forEach(k=>ys.add(parseYM(k)[0]));
+  });
+  return[...ys].sort();
+}
+/* series de un año: est[12], real[12] con filtro opcional */
+function seriesYear(year,filter){
+  const est=Array(12).fill(0),real=Array(12).fill(0);
+  for(const p of state.projects){
+    if(filter&&!filter(p))continue;
+    const s=schedule(p);for(const k in s){const[y,m]=parseYM(k);if(y===year)est[m]+=s[k];}
+    const r=realOf(p);for(const k in r){const[y,m]=parseYM(k);if(y===year)real[m]+=r[k];}
+  }
+  return{est,real};
+}
+
+/* ---------- persistencia de archivos (categorías) ---------- */
+function rowsFromFile(file){return new Promise((res,rej)=>{const fr=new FileReader();
+  fr.onload=e=>{try{const wb=XLSX.read(e.target.result,{type:'array'});
+    res(XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,raw:true,defval:null}));}catch(err){rej(err);}};
+  fr.onerror=rej;fr.readAsArrayBuffer(file);});}
+function ingestCats(rows){
+  let n=0;
+  for(const r of rows){
+    if(!r||!r.length)continue;
+    let name=String(r[0]??'').trim();if(!name)continue;
+    if(norm(name)==='CATEGORIA'||norm(name).startsWith('CATEGOR'))continue;
+    const cons=r.length>1?numAR(r[1]):null;
+    state.cats[name]= cons!=null?cons:(state.cats[name]??null);n++;
+  }
+  saveState();renderCatsList();fillCatSelect();
+  $('stCats').textContent=`✔ ${n} categorías procesadas. Total: ${Object.keys(state.cats).length}.`;
+  toast('Categorías actualizadas');
+}
+let _pickKind=null;
+function pickFile(kind){_pickKind=kind;$('fPick').value='';$('fPick').click();}
+$('fPick').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)return;
+  try{const rows=await rowsFromFile(f);ingestCats(rows);}catch(err){toast('No pude leer el archivo: '+err.message);}});
+function openPaste(){$('pasteArea').value='';dlgPaste.showModal();}
+function confirmPaste(){const rows=$('pasteArea').value.split(/\r?\n/).filter(l=>l.trim()).map(l=>l.split('\t').map(c=>c.trim()));
+  dlgPaste.close();ingestCats(rows);}
+const uc=$('uCats');
+uc.addEventListener('dragover',e=>{e.preventDefault();uc.classList.add('drag');});
+uc.addEventListener('dragleave',()=>uc.classList.remove('drag'));
+uc.addEventListener('drop',async e=>{e.preventDefault();uc.classList.remove('drag');
+  const f=e.dataTransfer.files[0];if(!f)return;
+  try{const rows=await rowsFromFile(f);ingestCats(rows);}catch(err){toast('Error: '+err.message);}});
+
+function exportJSON(){const b=new Blob([JSON.stringify(state)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='proyectos_ahorro.json';a.click();toast('Respaldo exportado');}
+$('fJson').addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;const fr=new FileReader();
+  fr.onload=ev=>{try{state=JSON.parse(ev.target.result);saveState();initAll();toast('Respaldo importado');}catch(err){toast('JSON inválido');}};
+  fr.readAsText(f);});
+function resetAll(){if(!confirm('¿Restaurar los proyectos de ejemplo del Excel y descartar lo cargado acá?'))return;
+  loadSeed();initAll();toast('Ejemplos restaurados');}
+
+/* ============================================================
+   FORMULARIO DE PROYECTO
+============================================================ */
+let _editId=null;
+function fillCatSelect(){
+  const s=$('fCat');const cur=s.value;
+  s.innerHTML='<option value="">— elegir categoría —</option>'+Object.keys(state.cats).sort().map(c=>`<option>${c}</option>`).join('');
+  if(cur)s.value=cur;
+}
+function buildDurSelect(){$('fDur').innerHTML=Array.from({length:12},(_,i)=>`<option value="${i+1}" ${i===11?'selected':''}>${i+1} ${i?'meses':'mes'}</option>`).join('');}
+function buildSteps(){
+  $('fSteps').innerHTML=[1,2,3,4].map(k=>`
+    <div class="il-step" id="step${k}">
+      <div class="t">${IL_INFO[k][0]}</div><div class="s">${IL_INFO[k][1]}</div>
+      <input type="number" step="any" id="fIL${k}" placeholder="monto USD" >
+      <label style="display:flex;gap:6px;align-items:center;font-size:.72rem;font-weight:700;margin-top:5px;cursor:pointer">
+        <input type="radio" name="ilCur" value="${k}"> Nivel actual
+      </label>
+    </div>`).join('');
+  document.querySelectorAll('input[name=ilCur]').forEach(r=>r.addEventListener('change',paintSteps));
+  [1,2,3,4].forEach(k=>$('fIL'+k).addEventListener('input',()=>{paintSteps();updPct();}));
+}
+function curIL(){const r=document.querySelector('input[name=ilCur]:checked');return r?parseInt(r.value,10):1;}
+function paintSteps(){const c=curIL();
+  [1,2,3,4].forEach(k=>{const el=$('step'+k);
+    el.classList.toggle('on',k<=c);el.classList.toggle('cur',k===c);});}
+function updPct(){
+  const c=curIL();let monto=null;
+  for(let k=c;k>=1;k--){const v=numAR($('fIL'+k).value);if(v){monto=v;break;}}
+  if(monto==null)monto=numAR($('fAhorro').value);
+  const cons=numAR($('fConsumo').value);
+  $('fPct').textContent=(monto&&cons)?fPct(monto/cons,2):'–';
+}
+$('fConsumo')?.addEventListener?.('input',updPct);
+function clearForm(){
+  _editId=null;$('selEdit').value='';
+  $('formTitle').textContent='Nueva iniciativa de ahorro';
+  $('fNum').textContent=state.nextId;
+  $('fCat').value='';$('fSub').value='';$('fConsumo').value='';$('fAhorro').value='';
+  $('fFecha').value='';$('fDur').value='12';$('fDesc').value='';$('fObs').value='';$('fTrunco').checked=false;
+  [1,2,3,4].forEach(k=>$('fIL'+k).value='');
+  document.querySelector('input[name=ilCur][value="1"]').checked=true;
+  paintSteps();updPct();$('btnSave').textContent='Guardar proyecto';
+}
+function editProject(id){
+  const p=state.projects.find(x=>x.id===id);if(!p)return;
+  _editId=id;switchView('load');
+  $('selEdit').value=id;
+  $('formTitle').textContent='Editando proyecto N° '+id;
+  $('fNum').textContent=id;
+  fillCatSelect();$('fCat').value=p.cat;$('fSub').value=p.sub||'';
+  $('fConsumo').value=p.consumo??'';
+  $('fAhorro').value=p.monto.il1??vigente(p)??'';
+  $('fFecha').value=p.fecha||'';$('fDur').value=String(p.dur||12);
+  $('fDesc').value=p.desc||'';$('fObs').value=p.obs||'';$('fTrunco').checked=!!p.trunco;
+  [1,2,3,4].forEach(k=>$('fIL'+k).value=p.monto['il'+k]??'');
+  document.querySelector(`input[name=ilCur][value="${p.il}"]`).checked=true;
+  paintSteps();updPct();$('btnSave').textContent='Guardar cambios';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function saveProject(){
+  const cat=$('fCat').value;
+  if(!cat){toast('Elegí la categoría');return;}
+  if(!$('fDesc').value.trim()){toast('Completá la descripción de la iniciativa');return;}
+  if(!$('fFecha').value){toast('Elegí la fecha de implementación (mes y año)');return;}
+  const monto={};[1,2,3,4].forEach(k=>{const v=numAR($('fIL'+k).value);monto['il'+k]=v||null;});
+  const il=curIL();
+  if(!monto['il'+il]){
+    const base=numAR($('fAhorro').value);
+    if(base)monto['il'+il]=base;else{toast('Cargá el monto del nivel actual (IL'+il+')');return;}
+  }
+  const p={
+    id:_editId??state.nextId,
+    cat,sub:$('fSub').value.trim(),
+    consumo:numAR($('fConsumo').value),
+    desc:$('fDesc').value.trim(),obs:$('fObs').value.trim(),
+    monto,il,fecha:$('fFecha').value,dur:parseInt($('fDur').value,10),
+    trunco:$('fTrunco').checked,
+    real:(_editId!=null?(state.projects.find(x=>x.id===_editId)?.real||{}):{})
+  };
+  if(_editId!=null){
+    const i=state.projects.findIndex(x=>x.id===_editId);state.projects[i]=p;
+    toast('Proyecto N° '+p.id+' actualizado');
+  }else{
+    state.projects.push(p);state.nextId++;
+    toast('Proyecto N° '+p.id+' creado');
+  }
+  if(!state.cats[cat]&&p.consumo)state.cats[cat]=p.consumo;
+  saveState();clearForm();initAll();
+}
+/* ============================================================
+   RENDER
+============================================================ */
+const charts={};
+function mkChart(id,cfg){if(charts[id])charts[id].destroy();charts[id]=new Chart($(id),cfg);}
+Chart.defaults.font.family=getComputedStyle(document.body).fontFamily;
+Chart.defaults.color='#5F6E66';Chart.defaults.borderColor='#DCE3DC';
+const PAL=['#12352E','#1E8E5A','#F2B33D','#3E6B8F','#C43D3D','#B0771B','#6B3E8F','#2E7D7D','#84343E','#4C6B2F','#D97A4A','#8A97A0','#3E4F8F','#A34C7A'];
+
+function selYear(){return parseInt($('selYear').value,10);}
+
+function initAll(){
+  fillCatSelect();renderCatsList();
+  const ys=yearsInPlay();
+  const fill=(id,def)=>{const s=$(id);const cur=s.value;
+    s.innerHTML=ys.map(y=>`<option>${y}</option>`).join('');
+    s.value=(cur&&ys.includes(parseInt(cur,10)))?cur:def;};
+  const defY=ys.includes(new Date().getFullYear())?new Date().getFullYear():ys[ys.length-1];
+  fill('selYear',defY);fill('anYear',defY);fill('fxYear',defY);
+  // selector de edición
+  $('selEdit').innerHTML='<option value="">— nuevo proyecto —</option>'+
+    state.projects.map(p=>`<option value="${p.id}">N°${p.id} · ${p.desc.slice(0,42)}</option>`).join('');
+  $('fNum').textContent=_editId??state.nextId;
+  renderFx();renderAll();
+}
+function renderAll(){
+  renderHeader();renderPanel();renderProjects();renderAnalysis();renderStatus();
+}
+
+/* ---------- header pizarra ---------- */
+function renderHeader(){
+  const y=selYear()||new Date().getFullYear();
+  const {est,real}=seriesYear(y);
+  const totE=est.reduce((a,b)=>a+b,0),totR=real.reduce((a,b)=>a+b,0);
+  let pipe=0;state.projects.forEach(p=>{if(!p.trunco&&p.il<4){const v=vigente(p);if(v)pipe+=v;}});
+  const nAct=state.projects.filter(p=>estado(p)[0]==='activo').length;
+  $('hdBoard').innerHTML=`
+    <div class="board-kpi"><div class="lbl">Ahorro real ${y}</div><div class="val num green">${fUk(totR)}</div><div class="sub">dolarizado al TC BNA</div></div>
+    <div class="board-kpi"><div class="lbl">Estimado ${y}</div><div class="val num gold">${fUk(totE)}</div><div class="sub">según plan de proyectos</div></div>
+    <div class="board-kpi"><div class="lbl">Pipeline IL1–IL3</div><div class="val num small">${fUk(pipe)}</div><div class="sub">ahorro anual en gestión</div></div>
+    <div class="board-kpi"><div class="lbl">Proyectos activos</div><div class="val num small">${nAct}</div><div class="sub">generando ahorro hoy</div></div>`;
+  $('hdStatus').innerHTML=`Proyectos: <b>${state.projects.length}</b> · Categorías: <b>${Object.keys(state.cats).length}</b>`;
+}
+
+/* ---------- panel ---------- */
+function renderPanel(){
+  const y=selYear();const {est,real}=seriesYear(y);
+  const totE=est.reduce((a,b)=>a+b,0),totR=real.reduce((a,b)=>a+b,0);
+  $('kReal').textContent=fU(totR);$('kEst').textContent=fU(totE);
+  // cumplimiento sólo hasta el último mes con real cargado
+  let lastR=-1;real.forEach((v,i)=>{if(v>0)lastR=i;});
+  let eHasta=0,rHasta=0;for(let m=0;m<=lastR;m++){eHasta+=est[m];rHasta+=real[m];}
+  const cum=eHasta>0?rHasta/eHasta:null;
+  $('kCumpl').textContent=fPct(cum);
+  $('kCumpl').style.color=cum==null?'':cum>=1?'var(--good)':cum>=.7?'#B0771B':'var(--bad)';
+  let pipe=0,nPipe=0;state.projects.forEach(p=>{if(!p.trunco&&p.il<4){const v=vigente(p);if(v){pipe+=v;nPipe++;}}});
+  $('kPipe').textContent=fU(pipe);$('kPipeD').textContent=nPipe+' proyectos en gestión (IL1–IL3)';
+  const st={activo:0,fin:0,trunco:0,pipe:0,prog:0};
+  state.projects.forEach(p=>st[estado(p)[0]]++);
+  $('kProj').textContent=state.projects.length;
+  $('kProjD').textContent=`${st.activo} activos · ${st.fin} finalizados · ${st.pipe} en gestión · ${st.trunco} truncos`;
+  const nImpl=state.projects.filter(p=>p.il===4&&!p.trunco).length;
+  const exito=(nImpl+st.trunco)>0?nImpl/(nImpl+st.trunco):null;
+  $('kExito').textContent=fPct(exito,0);
+  $('hEstReal').textContent=y;
+
+  mkChart('chMes',{type:'bar',data:{labels:MES_AB,datasets:[
+    {label:'Estimado',data:est.map(v=>+v.toFixed(0)),backgroundColor:'rgba(242,179,61,.75)',borderRadius:6,maxBarThickness:26},
+    {label:'Real',data:real.map(v=>+v.toFixed(0)),backgroundColor:'#1E8E5A',borderRadius:6,maxBarThickness:26}
+  ]},options:{maintainAspectRatio:false,plugins:{legend:{position:'bottom'},
+    tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${fU(c.parsed.y)}`}}},
+    scales:{y:{ticks:{callback:v=>(v/1000)+'k'}}}}});
+
+  let ae=0,ar=0;const accE=est.map(v=>ae+=v),accR=real.map(v=>ar+=v);
+  mkChart('chAcum',{type:'line',data:{labels:MES_AB,datasets:[
+    {label:'Estimado acum.',data:accE.map(v=>+v.toFixed(0)),borderColor:'#B0771B',borderDash:[6,4],borderWidth:2.5,pointRadius:3,tension:.25},
+    {label:'Real acum.',data:accR.map(v=>+v.toFixed(0)),borderColor:'#1E8E5A',backgroundColor:'rgba(30,142,90,.10)',fill:true,borderWidth:3,pointRadius:4,tension:.25}
+  ]},options:{maintainAspectRatio:false,plugins:{legend:{position:'bottom'},
+    tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${fU(c.parsed.y)}`}}},
+    scales:{y:{ticks:{callback:v=>(v/1000)+'k'}}}}});
+
+  // por categoría (est vs real del año)
+  const byCat={};
+  for(const p of state.projects){
+    const s=schedule(p),r=realOf(p);
+    let e1=0,r1=0;
+    for(const k in s){if(parseYM(k)[0]===y)e1+=s[k];}
+    for(const k in r){if(parseYM(k)[0]===y)r1+=r[k];}
+    if(e1||r1){if(!byCat[p.cat])byCat[p.cat]={e:0,r:0};byCat[p.cat].e+=e1;byCat[p.cat].r+=r1;}
+  }
+  const cats=Object.entries(byCat).sort((a,b)=>(b[1].e+b[1].r)-(a[1].e+a[1].r));
+  mkChart('chCat',{type:'bar',data:{labels:cats.map(c=>c[0]),datasets:[
+    {label:'Estimado',data:cats.map(c=>+c[1].e.toFixed(0)),backgroundColor:'rgba(242,179,61,.75)',borderRadius:6,maxBarThickness:18},
+    {label:'Real',data:cats.map(c=>+c[1].r.toFixed(0)),backgroundColor:'#1E8E5A',borderRadius:6,maxBarThickness:18}
+  ]},options:{indexAxis:'y',maintainAspectRatio:false,plugins:{legend:{position:'bottom'},
+    tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${fU(c.parsed.x)}`}}},
+    scales:{x:{ticks:{callback:v=>(v/1000)+'k'}}}}});
+
+  // cartera por IL (montos vigentes, no truncos) + truncos aparte
+  const ilSum={1:0,2:0,3:0,4:0};let truncoSum=0;
+  state.projects.forEach(p=>{const v=vigente(p);if(!v)return;
+    if(p.trunco)truncoSum+=v;else ilSum[p.il]+=v;});
+  mkChart('chIL',{type:'bar',data:{
+    labels:['IL1 Proposed','IL2 Reviewed','IL3 Validated','IL4 Implemented','Truncos'],
+    datasets:[{data:[ilSum[1],ilSum[2],ilSum[3],ilSum[4],truncoSum].map(v=>+v.toFixed(0)),
+      backgroundColor:['#8A97A0','#3E6B8F','#B0771B','#1E8E5A','#C43D3D'],borderRadius:8,maxBarThickness:60}]},
+    options:{maintainAspectRatio:false,plugins:{legend:{display:false},
+      tooltip:{callbacks:{label:c=>` ${fU(c.parsed.y)} anuales`}}},
+      scales:{y:{ticks:{callback:v=>(v/1000)+'k'}}}}});
+}
+
+/* ---------- proyectos: tabla + detalle ---------- */
+let _selProj=null,_filter='all';
+document.querySelectorAll('#projFilters .chip').forEach(ch=>ch.addEventListener('click',()=>{
+  document.querySelectorAll('#projFilters .chip').forEach(c=>c.classList.remove('on'));
+  ch.classList.add('on');_filter=ch.dataset.f;renderProjects();
+}));
+$('projSearch').addEventListener('input',renderProjects);
+function renderProjects(){
+  const q=norm($('projSearch').value);
+  const rows=state.projects.filter(p=>{
+    const e=estado(p)[0];
+    if(_filter==='pipe'&&e!=='pipe')return false;
+    if(_filter==='activo'&&e!=='activo')return false;
+    if(_filter==='fin'&&e!=='fin')return false;
+    if(_filter==='trunco'&&e!=='trunco')return false;
+    if(q){const hay=norm(p.id+' '+p.desc+' '+p.cat+' '+p.sub);if(!q.split(/\s+/).every(t=>hay.includes(t)))return false;}
+    return true;
+  }).sort((a,b)=>a.id-b.id);
+  let html=`<thead><tr><th>N°</th><th style="text-align:left">Iniciativa</th><th>Categoría</th><th>Subcat.</th>
+    <th>Estado</th><th>Ahorro anual</th><th>% Ahorro</th><th>Impl.</th><th>Dur.</th><th>Real acum.</th></tr></thead><tbody>`;
+  for(const p of rows){
+    const[,label,cls]=estado(p);const v=vigente(p);
+    const pct=(v&&p.consumo)?v/p.consumo:null;
+    const rTot=Object.values(realOf(p)).reduce((a,b)=>a+b,0);
+    const[y0,m0]=parseYM(p.fecha);
+    html+=`<tr>
+      <td class="link num" onclick="showProj(${p.id})">${p.id}</td>
+      <td class="wrap link" onclick="showProj(${p.id})">${p.desc}</td>
+      <td style="text-align:left">${p.cat}</td><td style="text-align:left">${p.sub||'–'}</td>
+      <td style="text-align:left"><span class="badge ${cls}">${label}</span></td>
+      <td class="num">${fU(v)}</td><td class="num">${fPct(pct)}</td>
+      <td class="num">${MES_AB[m0]}-${String(y0).slice(2)}</td><td class="num">${p.dur||12}m</td>
+      <td class="num" style="color:var(--good);font-weight:700">${rTot?fU(rTot):'–'}</td></tr>`;
+  }
+  if(!rows.length)html+='<tr><td colspan="10" class="note">No hay proyectos que coincidan con el filtro.</td></tr>';
+  $('tblProj').innerHTML=html+'</tbody>';
+  if(_selProj!=null&&state.projects.find(p=>p.id===_selProj))renderProjDetail();
+}
+function showProj(id){_selProj=id;$('projDetail').style.display='block';renderProjDetail();
+  $('projDetail').scrollIntoView({behavior:'smooth',block:'start'});}
+function renderProjDetail(){
+  const p=state.projects.find(x=>x.id===_selProj);if(!p)return;
+  const[,label,cls]=estado(p);const v=vigente(p);
+  $('pdNum').textContent='N°'+p.id;
+  $('pdDesc').textContent=p.desc;
+  const[y0,m0]=parseYM(p.fecha);
+  $('pdMeta').innerHTML=`${p.cat}${p.sub?' · '+p.sub:''} · Implementación: <b>${MESES[m0]} ${y0}</b> · Duración: <b>${p.dur||12} meses</b>`+
+    (p.consumo?` · Consumo anual categoría: <b>${fU(p.consumo)}</b> · % Ahorro: <b>${fPct(v&&p.consumo?v/p.consumo:null,2)}</b>`:'');
+  $('pdBadge').innerHTML=`<span class="badge ${cls}" style="font-size:.85rem;padding:6px 16px">${label}</span>`;
+  $('pdSteps').innerHTML=[1,2,3,4].map(k=>{
+    const on=k<=p.il,cur=k===p.il,m=p.monto['il'+k];
+    return`<div class="il-step ${on?'on':''} ${cur?'cur':''}">
+      <div class="t">${IL_INFO[k][0]}</div><div class="s">${IL_INFO[k][1]}</div>
+      <div class="num" style="font-weight:900;margin-top:6px">${m?fU(m):'—'}</div></div>`;}).join('');
+  $('pdObs').textContent=p.obs?'Observaciones: '+p.obs:'';
+  // rango temporal: desde impl hasta fin (o hasta último real)
+  const s=schedule(p),r=realOf(p);
+  const keys=[...new Set([...Object.keys(s),...Object.keys(r)])].sort();
+  const lbls=keys.map(k=>{const[y,m]=parseYM(k);return MES_AB[m]+'-'+String(y).slice(2);});
+  mkChart('chProj',{type:'bar',data:{labels:lbls,datasets:[
+    {label:'Estimado',data:keys.map(k=>s[k]?+s[k].toFixed(0):null),backgroundColor:'rgba(242,179,61,.75)',borderRadius:6,maxBarThickness:26},
+    {label:'Real',data:keys.map(k=>r[k]?+r[k].toFixed(0):null),backgroundColor:'#1E8E5A',borderRadius:6,maxBarThickness:26}
+  ]},options:{maintainAspectRatio:false,plugins:{legend:{position:'bottom'},
+    tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${fU(c.parsed.y)}`}}},
+    scales:{y:{ticks:{callback:v=>(v/1000)+'k'}}}}});
+  // tabla mensual
+  let html='<thead><tr><th>Mes</th><th>Estimado</th><th>Real</th><th>Desvío</th><th></th></tr></thead><tbody>';
+  for(const k of keys){
+    const[y,m]=parseYM(k);const e=s[k]||0,rr=r[k]||0;
+    const dv=e>0?rr/e-1:null;
+    const dcls=dv==null?'vn':dv>=0?'vg':'vb';
+    html+=`<tr><td>${MESES[m]} ${y}</td><td class="num">${e?fU(e):'–'}</td>
+      <td class="num" style="color:var(--good);font-weight:700">${rr?fU(rr):'–'}</td>
+      <td><span class="cell-var num ${dcls}">${fPct(dv)}</span></td>
+      <td>${p.real&&p.real[k]?`<button class="btn ghost sm" onclick="delReal('${k}')">✕</button>`:''}</td></tr>`;
+  }
+  const totE=keys.reduce((a,k)=>a+(s[k]||0),0),totR=keys.reduce((a,k)=>a+(r[k]||0),0);
+  html+=`<tr style="font-weight:800;background:var(--chalk)"><td>Total</td><td class="num">${fU(totE)}</td>
+    <td class="num" style="color:var(--good)">${fU(totR)}</td>
+    <td><span class="cell-var num ${totE>0?(totR/totE>=1?'vg':'vb'):'vn'}">${fPct(totE>0?totR/totE-1:null)}</span></td><td></td></tr>`;
+  $('tblProjMes').innerHTML=html+'</tbody>';
+  // prefills del formulario de real
+  if(!$('rMes').value){const now=new Date();$('rMes').value=ymKey(now.getFullYear(),now.getMonth());}
+  prefillTC();updRealCalc();
+}
+function prefillTC(){const k=$('rMes').value;if(k&&state.fx[k]&&!$('rTC').value)$('rTC').value=state.fx[k];}
+['rQty','rPAnt','rPNue','rTC'].forEach(id=>$(id).addEventListener('input',updRealCalc));
+$('rMes').addEventListener('change',()=>{$('rTC').value=state.fx[$('rMes').value]??'';updRealCalc();});
+function realUSD(){
+  const q=numAR($('rQty').value),pa=numAR($('rPAnt').value),pn=numAR($('rPNue').value),tc=numAR($('rTC').value);
+  if(q==null||pa==null||pn==null||!tc)return null;
+  return q*(pa-pn)/tc;
+}
+function updRealCalc(){const v=realUSD();$('rCalc').textContent=v==null?'–':fU(v,2);
+  $('rCalc').style.color=v==null?'':v>=0?'var(--good)':'var(--bad)';}
+function saveReal(){
+  const p=state.projects.find(x=>x.id===_selProj);if(!p)return;
+  const k=$('rMes').value;if(!k){toast('Elegí el mes');return;}
+  const usd=realUSD();if(usd==null){toast('Completá cantidad, precios y TC');return;}
+  if(!p.real)p.real={};
+  p.real[k]={usd:+usd.toFixed(2),qty:numAR($('rQty').value),pAnt:numAR($('rPAnt').value),pNue:numAR($('rPNue').value),tc:numAR($('rTC').value)};
+  const tc=numAR($('rTC').value);if(tc)state.fx[k]=tc;
+  saveState();initAll();renderProjDetail();
+  toast(`Ahorro de ${fU(usd,0)} registrado en ${k}`);
+  ['rQty','rPAnt','rPNue'].forEach(id=>$(id).value='');updRealCalc();
+}
+function delReal(k){
+  const p=state.projects.find(x=>x.id===_selProj);if(!p||!p.real[k])return;
+  if(!confirm('¿Eliminar el ahorro real de '+k+'?'))return;
+  delete p.real[k];saveState();initAll();renderProjDetail();
+}
+/* ---------- análisis ---------- */
+['anDim','anMet','anYear'].forEach(id=>$(id).addEventListener('change',renderAnalysis));
+function groupKey(p,dim){
+  if(dim==='cat')return p.cat;
+  if(dim==='sub')return p.sub||'(sin subcategoría)';
+  return p.trunco?'Truncos':IL_INFO[p.il][0];
+}
+function renderAnalysis(){
+  const dim=$('anDim').value,met=$('anMet').value,y=parseInt($('anYear').value,10);
+  const groups={};
+  for(const p of state.projects){
+    const src= met==='est'? schedule(p) : realOf(p);
+    const g=groupKey(p,dim);
+    for(const k in src){const[yy,m]=parseYM(k);if(yy!==y)continue;
+      if(!groups[g])groups[g]=Array(12).fill(0);
+      groups[g][m]+=src[k];}
+  }
+  const names=Object.keys(groups).sort((a,b)=>groups[b].reduce((x,v)=>x+v,0)-groups[a].reduce((x,v)=>x+v,0));
+  const qOf=arr=>[0,1,2,3].map(q=>arr.slice(q*3,q*3+3).reduce((a,b)=>a+b,0));
+  // gráfico apilado por trimestre
+  $('anChartT').textContent=`Ahorro ${met==='est'?'estimado':'real'} por trimestre · ${y}`;
+  mkChart('chAn',{type:'bar',data:{labels:['Q1','Q2','Q3','Q4'],
+    datasets:names.map((n,i)=>({label:n,data:qOf(groups[n]).map(v=>+v.toFixed(0)),
+      backgroundColor:PAL[i%PAL.length],borderRadius:4,maxBarThickness:70}))},
+    options:{maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{boxWidth:12,font:{size:10}}},
+      tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${fU(c.parsed.y)}`}}},
+      scales:{x:{stacked:true},y:{stacked:true,ticks:{callback:v=>(v/1000)+'k'}}}}});
+  // tabla trimestral
+  let html=`<thead><tr><th>${dim==='cat'?'Categoría':dim==='sub'?'Subcategoría':'Nivel'}</th><th>Q1</th><th>Q2</th><th>Q3</th><th>Q4</th><th>Total ${y}</th></tr></thead><tbody>`;
+  const totQ=[0,0,0,0];
+  for(const n of names){
+    const q=qOf(groups[n]);q.forEach((v,i)=>totQ[i]+=v);
+    html+=`<tr><td class="wrap">${n}</td>${q.map(v=>`<td class="num">${v?fU(v):'–'}</td>`).join('')}
+      <td class="num" style="font-weight:800">${fU(q.reduce((a,b)=>a+b,0))}</td></tr>`;
+  }
+  html+=`<tr style="font-weight:800;background:var(--chalk)"><td>Total</td>${totQ.map(v=>`<td class="num">${fU(v)}</td>`).join('')}
+    <td class="num">${fU(totQ.reduce((a,b)=>a+b,0))}</td></tr>`;
+  if(!names.length)html+='<tr><td colspan="6" class="note">Sin datos para este año y métrica.</td></tr>';
+  $('tblAn').innerHTML=html+'</tbody>';
+  // comparativa años
+  const ys=yearsInPlay();
+  const estY=ys.map(yy=>{const{est}=seriesYear(yy);return +est.reduce((a,b)=>a+b,0).toFixed(0);});
+  const realY=ys.map(yy=>{const{real}=seriesYear(yy);return +real.reduce((a,b)=>a+b,0).toFixed(0);});
+  mkChart('chYears',{type:'bar',data:{labels:ys,datasets:[
+    {label:'Estimado',data:estY,backgroundColor:'rgba(242,179,61,.75)',borderRadius:6,maxBarThickness:50},
+    {label:'Real',data:realY,backgroundColor:'#1E8E5A',borderRadius:6,maxBarThickness:50}
+  ]},options:{maintainAspectRatio:false,plugins:{legend:{position:'bottom'},
+    tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${fU(c.parsed.y)}`}}},
+    scales:{y:{ticks:{callback:v=>(v/1000)+'k'}}}}});
+  // est vs real por grupo (año elegido)
+  $('anMixHint').textContent=y;
+  const gruposER={};
+  for(const p of state.projects){
+    const g=groupKey(p,dim);const s=schedule(p),r=realOf(p);
+    let e1=0,r1=0;
+    for(const k in s){if(parseYM(k)[0]===y)e1+=s[k];}
+    for(const k in r){if(parseYM(k)[0]===y)r1+=r[k];}
+    if(e1||r1){if(!gruposER[g])gruposER[g]={e:0,r:0};gruposER[g].e+=e1;gruposER[g].r+=r1;}
+  }
+  const gn=Object.keys(gruposER).sort((a,b)=>(gruposER[b].e+gruposER[b].r)-(gruposER[a].e+gruposER[a].r)).slice(0,12);
+  mkChart('chMix',{type:'bar',data:{labels:gn,datasets:[
+    {label:'Estimado',data:gn.map(n=>+gruposER[n].e.toFixed(0)),backgroundColor:'rgba(242,179,61,.75)',borderRadius:5,maxBarThickness:16},
+    {label:'Real',data:gn.map(n=>+gruposER[n].r.toFixed(0)),backgroundColor:'#1E8E5A',borderRadius:5,maxBarThickness:16}
+  ]},options:{indexAxis:'y',maintainAspectRatio:false,plugins:{legend:{position:'bottom'},
+    tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${fU(c.parsed.x)}`}}},
+    scales:{x:{ticks:{callback:v=>(v/1000)+'k'}}}}});
+}
+
+/* ---------- carga: categorías + fx + estado ---------- */
+function renderCatsList(){
+  const names=Object.keys(state.cats).sort();
+  let html='<thead><tr><th>Categoría</th><th>Consumo anual USD</th><th></th></tr></thead><tbody>';
+  for(const n of names){
+    html+=`<tr><td>${n}</td><td class="num">${state.cats[n]!=null?fU(state.cats[n]):'–'}</td>
+      <td><button class="btn ghost sm" onclick="delCat('${n.replace(/'/g,"\\'")}')">✕</button></td></tr>`;
+  }
+  if(!names.length)html+='<tr><td colspan="3" class="note">Subí el listado de categorías de la empresa.</td></tr>';
+  $('tblCatsList').innerHTML=html+'</tbody>';
+}
+function delCat(n){
+  if(state.projects.some(p=>p.cat===n)){toast('Hay proyectos usando esa categoría; no se puede eliminar');return;}
+  delete state.cats[n];saveState();renderCatsList();fillCatSelect();
+}
+$('fxYear').addEventListener('change',renderFx);
+function renderFx(){
+  const y=parseInt($('fxYear').value,10)||new Date().getFullYear();
+  const g=$('fxGrid');g.innerHTML='';
+  MES_AB.forEach((mn,m)=>{
+    const k=ymKey(y,m);
+    const d=document.createElement('div');d.className='fxc';
+    d.innerHTML=`<span>${mn}</span><input type="number" step="0.5" value="${state.fx[k]??''}">`;
+    d.querySelector('input').addEventListener('change',e=>{
+      const v=numAR(e.target.value);
+      if(v==null)delete state.fx[k];else state.fx[k]=v;
+      saveState();
+    });
+    g.appendChild(d);
+  });
+}
+function renderStatus(){
+  const st={activo:0,fin:0,trunco:0,pipe:0,prog:0};
+  state.projects.forEach(p=>st[estado(p)[0]]++);
+  const nReal=state.projects.reduce((a,p)=>a+Object.keys(p.real||{}).length,0);
+  $('dataStatus').innerHTML=`
+    Proyectos: <b>${state.projects.length}</b> (próximo N°: <b>${state.nextId}</b>)<br>
+    ${st.pipe} en gestión · ${st.activo} generando ahorro · ${st.prog} programados · ${st.fin} finalizados · ${st.trunco} truncos<br>
+    Registros de ahorro real: <b>${nReal}</b> meses cargados<br>
+    Años en juego: <b>${yearsInPlay().join(', ')}</b>`;
+}
+
+/* ---------- navegación ---------- */
+function switchView(v){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.view===v));
+  document.querySelectorAll('.view').forEach(s=>s.classList.toggle('active',s.id==='view-'+v));
+}
+document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>switchView(t.dataset.view)));
+$('selYear').addEventListener('change',()=>{renderHeader();renderPanel();});
+$('selEdit').addEventListener('change',e=>{
+  const v=e.target.value;
+  if(v)editProject(parseInt(v,10));else clearForm();
+});
+$('fAhorro').addEventListener('input',updPct);
+$('fConsumo').addEventListener('input',updPct);
+$('fCat').addEventListener('change',()=>{
+  const c=$('fCat').value;
+  if(c&&state.cats[c]!=null&&!$('fConsumo').value)$('fConsumo').value=state.cats[c];
+  updPct();
+});
+
+/* ---------- init ---------- */
+
+/* Firebase Auth — administrador vs. solo lectura */
+const ADMIN_EMAIL='ramirofreue@gmail.com';
+let isAdmin=false;
+function applyAdminUI(){
+  document.querySelectorAll('.admin-gate').forEach(el=>el.classList.add('locked'));
+  const el=$('fbStatus'); if(!el) return;
+  el.style.display='block';
+  el.className='mode-read';
+  el.innerHTML = '👀 Vista de solo lectura · datos en vivo';
+}
+function openLogin(){ $('loginEmail').value=''; $('loginPass').value=''; dlgLogin.showModal(); }
+async function confirmLogin(){
+  const email=$('loginEmail').value.trim(), pass=$('loginPass').value;
+  if(!email||!pass){ toast('Completá email y contraseña'); return; }
+  try{ await auth.signInWithEmailAndPassword(email,pass); dlgLogin.close(); }
+  catch(e){ toast('No se pudo iniciar sesión: '+e.message); }
+}
+async function logoutFB(){
+  try{ await auth.signOut(); await auth.signInAnonymously(); toast('Sesión cerrada — modo lectura'); }
+  catch(e){ console.error(e); }
+}
+function bootLocal(){
+  if(!loadState())loadSeed();
+  clearForm();
+  initAll();
+}
+function bootFirebase(){
+  auth.onAuthStateChanged(async user=>{
+    if(!user){ try{ await auth.signInAnonymously(); }catch(e){ console.error(e); bootLocal(); } return; }
+    isAdmin = user.email===ADMIN_EMAIL;
+    applyAdminUI();
+    const had = await loadState();
+    if(!had) loadSeed();
+    setupFirebaseListener();
+    clearForm();
+    initAll();
+  });
+}
+
+buildDurSelect();buildSteps();
+if(window.firebaseReady){
+  try{ db=firebase.firestore(); auth=firebase.auth(); bootFirebase(); }
+  catch(e){ console.error('Firebase init error:',e); window.firebaseReady=false; bootLocal(); }
+} else {
+  bootLocal();
+}
+</script>
+<script>
+if('serviceWorker' in navigator){
+  window.addEventListener('load', ()=>{
+    navigator.serviceWorker.register('sw.js').catch(e=>console.warn('SW error:',e));
+  });
+}
+</script>
+</body>
+</html>
