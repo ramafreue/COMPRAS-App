@@ -50,7 +50,8 @@ header{
   color:var(--chalk);
   padding:26px 32px 0;
 }
-.hd-top{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:12px;max-width:1360px;margin:0 auto}
+.hd-top{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;max-width:1360px;margin:0 auto}
+.hd-left{display:flex;flex-direction:column;gap:8px;align-items:flex-start}
 .brand{display:flex;align-items:baseline;gap:14px}
 .brand h1{
   font-weight:900;letter-spacing:.02em;font-size:1.5rem;text-transform:uppercase;
@@ -264,13 +265,12 @@ try {
 
 <header>
   <div class="hd-top">
-    <div class="brand"><a class="home-fab" href="index.html" title="Volver al inicio">🏠</a>
+    <div class="hd-left"><div class="brand"><a class="home-fab" href="index.html" title="Volver al inicio">🏠</a>
       <h1>Indicadores <span>de Compras</span></h1>
       <span class="yr" id="hdYear">Año</span>
-    </div>
-    <div class="hd-status" id="hdStatus">Sin datos cargados</div>
-    <div id="fbStatus" style="margin-top:6px;padding:8px 16px;border-radius:8px;font-size:.8rem;font-weight:700;display:none"></div>
-  </div>
+    </div><div id="fbStatus" style="margin-top:6px;padding:8px 16px;border-radius:8px;font-size:.8rem;font-weight:700;display:none"></div></div>
+<div class="hd-status" id="hdStatus">Sin datos cargados</div>
+</div>
   <div class="hd-board" id="hdBoard"></div>
 </header>
 
