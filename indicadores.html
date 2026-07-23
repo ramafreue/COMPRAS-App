@@ -259,6 +259,21 @@ try {
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<script>
+/* Arreglo para el bug de rotación en Android Chrome: al volver a vertical,
+   a veces no recalcula el ancho. Forzamos un recálculo del viewport. */
+(function(){
+  var vp = document.querySelector('meta[name="viewport"]');
+  if(!vp) return;
+  var base = vp.getAttribute('content');
+  function fixViewport(){
+    vp.setAttribute('content', base + ', shrink-to-fit=yes');
+    setTimeout(function(){ vp.setAttribute('content', base); window.scrollTo(0,0); }, 60);
+  }
+  window.addEventListener('orientationchange', fixViewport);
+  if(window.visualViewport){ window.visualViewport.addEventListener('resize', fixViewport); }
+})();
+</script>
 </head>
 <body>
 
@@ -529,9 +544,8 @@ let state = {
 let db=null, auth=null;
 const KEY='indicadores';
 async function saveState(){
-  if(!window.firebaseReady || !auth.currentUser) { try{localStorage.setItem(KEY,JSON.stringify(state));}catch(e){} return; }
-  try{ await db.collection('indicadores').doc('data').set(state); }
-  catch(e){ console.error('Error guardando en Firebase:',e); toast('Error al guardar en la nube'); }
+  /* App de solo lectura: nunca escribe en Firestore, solo cachea localmente. */
+  try{ localStorage.setItem(KEY,JSON.stringify(state)); }catch(e){}
 }
 async function loadState(){
   if(!window.firebaseReady || !auth.currentUser) {
