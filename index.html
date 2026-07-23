@@ -51,6 +51,21 @@ footer{margin-top:40px;color:rgba(246,243,232,.45);font-size:.75rem;text-align:c
   .card{padding:22px 20px}
 }
 </style>
+<script>
+/* Arreglo para el bug de rotación en Android Chrome: al volver a vertical,
+   a veces no recalcula el ancho. Forzamos un recálculo del viewport. */
+(function(){
+  var vp = document.querySelector('meta[name="viewport"]');
+  if(!vp) return;
+  var base = vp.getAttribute('content');
+  function fixViewport(){
+    vp.setAttribute('content', base + ', shrink-to-fit=yes');
+    setTimeout(function(){ vp.setAttribute('content', base); window.scrollTo(0,0); }, 60);
+  }
+  window.addEventListener('orientationchange', fixViewport);
+  if(window.visualViewport){ window.visualViewport.addEventListener('resize', fixViewport); }
+})();
+</script>
 </head>
 <body>
 
