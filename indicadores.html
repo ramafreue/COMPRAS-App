@@ -260,18 +260,50 @@ try {
 <link rel="apple-touch-icon" href="icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <script>
-/* Arreglo para el bug de rotación en Android Chrome: al volver a vertical,
-   a veces no recalcula el ancho. Forzamos un recálculo del viewport. */
+/* Arreglo para el bug de rotación en Android (frecuente en MIUI/Xiaomi):
+   al volver a vertical, el navegador a veces "congela" el ancho de la
+   pantalla en el valor que tenía en horizontal. Forzamos el recálculo
+   fijando el viewport al ancho real actual, y si aun así no se corrige,
+   recargamos la página (los datos no se pierden, viven en Firebase). */
 (function(){
   var vp = document.querySelector('meta[name="viewport"]');
   if(!vp) return;
-  var base = vp.getAttribute('content');
-  function fixViewport(){
-    vp.setAttribute('content', base + ', shrink-to-fit=yes');
-    setTimeout(function(){ vp.setAttribute('content', base); window.scrollTo(0,0); }, 60);
+  var DEFAULT_CONTENT = vp.getAttribute('content');
+  var lastW = window.innerWidth, lastH = window.innerHeight;
+  var fixing = false;
+
+  function forceRelayout(){
+    if(fixing) return;
+    fixing = true;
+    var w = window.innerWidth;
+    vp.setAttribute('content', 'width=' + w + ', initial-scale=1.0');
+    requestAnimationFrame(function(){
+      requestAnimationFrame(function(){
+        vp.setAttribute('content', DEFAULT_CONTENT);
+        window.scrollTo(0,0);
+        fixing = false;
+        // Verificación final: si el ancho visual sigue sin coincidir
+        // con el ancho real de la ventana, recargamos como último recurso.
+        setTimeout(function(){
+          if(Math.abs(document.documentElement.clientWidth - window.innerWidth) > 30){
+            location.reload();
+          }
+        }, 350);
+      });
+    });
   }
-  window.addEventListener('orientationchange', fixViewport);
-  if(window.visualViewport){ window.visualViewport.addEventListener('resize', fixViewport); }
+
+  function onPossibleRotation(){
+    var w = window.innerWidth, h = window.innerHeight;
+    if(w !== lastW || h !== lastH){
+      lastW = w; lastH = h;
+      setTimeout(forceRelayout, 120);
+    }
+  }
+
+  window.addEventListener('orientationchange', function(){ setTimeout(forceRelayout, 150); });
+  window.addEventListener('resize', onPossibleRotation);
+  if(window.visualViewport){ window.visualViewport.addEventListener('resize', onPossibleRotation); }
 })();
 </script>
 </head>
